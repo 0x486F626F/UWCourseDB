@@ -2,10 +2,11 @@ import sqlite3
 import datetime
 
 class UWCourseDB:
-	def __init__(self, term, uwapi, timedelta = 3600): #{{{
+	def __init__(self, term, uwapi, timedelta = 3600, path = 'db/'): #{{{
 		self.term = term
 		self.uwapi = uwapi
-		self.sql = sqlite3.connect(str(term) + '.db')
+		self.path = path
+		self.sql = sqlite3.connect(path + str(term) + '.db')
 		self.db = self.sql.cursor()
 		self.min_timedelta = datetime.timedelta(seconds = timedelta)
 		self.create_table_if_not_exists("course", [
