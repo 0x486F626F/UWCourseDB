@@ -3,6 +3,8 @@ import datetime
 
 class UWCourseDB:
 	def __init__(self, term, uwapi, timedelta = 3600, path = 'db/'): #{{{
+		"""Constructor
+		"""
 		self.term = term
 		self.uwapi = uwapi
 		self.path = path
@@ -61,12 +63,13 @@ class UWCourseDB:
 		#}}}
 
 	def update_course(self, subject, catalog): #{{{
-		self.db.execute("SELECT last_sync FROM course WHERE subject = '" + subject + \
-				"' AND catalog_number = '" + catalog + "';")
+		self.db.execute("SELECT last_sync FROM course WHERE subject = '" + \
+                        subject + "' AND catalog_number = '" + catalog + "';")
 		result = self.db.fetchone()
 
 		if (result is not None):
-			last_sync = datetime.datetime.strptime(str(result[0]), "%Y-%m-%d %H:%M:%S.%f")
+			last_sync = datetime.datetime.strptime(
+                str(result[0]), "%Y-%m-%d %H:%M:%S.%f")
 			if (datetime.datetime.today() - last_sync < self.min_timedelta):
 				print "No need to update " + subject + catalog
 				return
@@ -87,7 +90,8 @@ class UWCourseDB:
 				self.insert_data("course", header_value_pairs)
 			else:
 				self.update_data("course", header_value_pairs,
-					"subject = '" + subject + "' AND catalog_number = '" + catalog + "'")
+					"subject = '" + subject + \
+                                 "' AND catalog_number = '" + catalog + "'")
 				
 			self.db.execute('DROP TABLE IF EXISTS ' + subject + catalog + ";")
 			self.create_table_if_not_exists(subject + catalog, [
@@ -119,6 +123,15 @@ class UWCourseDB:
 		held_with = ''
 		for course in section['held_with']:
 			held_with += str(course) + '\n'
+		associated_class = str(section['associated_class'])
+		related_component_1 = str(section['related_component_1'])
+		related_component_2 = str(section['related_component_2'])
+		if (associated_class == '99'):
+			associated_class = 'None'
+		if (related_component_1 == '99'):
+			related_component_1 = 'None'
+		if (related_component_2 == '99'):
+			related_component_2 = 'None'
 		section_header_value_pairs = [
 				['class_number',		str(section['class_number'])],
 				['section',				str(section['section'])],
@@ -132,16 +145,21 @@ class UWCourseDB:
 				['waiting_capacity',	section['waiting_capacity']],
 				['held_with',			held_with]]
 
+
 		self.insert_data(course_table, section_header_value_pairs)
 
 		for reserve in section['reserves']:
 			reserve_header_value_pairs = section_header_value_pairs[:]
-			reserve_header_value_pairs.append(['reserve_group',		str(reserve['reserve_group'])])
-			reserve_header_value_pairs.append(['reserve_total',		str(reserve['enrollment_total'])])
-			reserve_header_value_pairs.append(['reserve_capacity',	str(reserve['enrollment_capacity'])])
+			reserve_header_value_pairs.append(
+                ['reserve_group',		str(reserve['reserve_group'])])
+			reserve_header_value_pairs.append(
+                ['reserve_total',		str(reserve['enrollment_total'])])
+			reserve_header_value_pairs.append(
+                ['reserve_capacity',	str(reserve['enrollment_capacity'])])
 			self.insert_data(course_table, reserve_header_value_pairs)
 
-		time_schedule = course_table + section['section'].replace(" ", "") + "_schedule"
+		time_schedule = course_table + section['section'].replace(" ", "") + \
+        "_schedule"
 		self.db.execute('DROP TABLE IF EXISTS ' + time_schedule + ";")
 		self.create_table_if_not_exists(time_schedule, [
 			'is_tba			TEXT',
