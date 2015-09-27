@@ -196,7 +196,7 @@ class UWCourseDB:
 		#}}}
 
 	
-	def is_opening(self, subject, catalog, section):
+	def is_opening(self, subject, catalog, section): #{{{
 		self.db.execute('SELECT is_tba, is_cancelled, is_closed FROM ' + \
 				subject + catalog + section + '_schedule;')
 		search_result = self.db.fetchall()
@@ -205,9 +205,10 @@ class UWCourseDB:
 				str(row[2]) == 'True'):
 				return False
 		return True
+		#}}}
 
 
-	def get_opening_sections(self, subject, catalog):
+	def get_opening_sections(self, subject, catalog): #{{{
 		self.db.execute('SELECT section FROM ' + subject + catalog + \
 				' ORDER BY section;')
 		search_result = self.db.fetchall()
@@ -234,5 +235,21 @@ class UWCourseDB:
 					result[index].append(section)
 		result = filter(None, result)
 		return result
-			
+		#}}}
+	
+	def get_related_sections(self, subject, catalog, section): #{{{
+		#}}}
+	
+	def get_time_schedule(self, subject, catalog, section): #{{{
+		"""get time schedule of a class
+		The result contains two components:
+		[list_of_weekly_classes, list_of_one_time_classes], where
+		Each weekly_class in list_of_weekly_classes is formatted as
+		[list_of_weekdays, start_time, end_time]
+		Each one_time_class in list_of_one_time_classes is formatted as
+		[date, start_time, end_time]
+		"""
+		#}}}
 
+	def get_instructors(self, subject, catalog, section): #{{{
+		#}}}
