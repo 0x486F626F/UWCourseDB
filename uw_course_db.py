@@ -284,6 +284,7 @@ class UWCourseDB:
 								open_sections_list[index]):
 							temp_result.append(str(row[0]))
 			result.append(temp_result)
+		result = filter(None, result)
 		return result
 	#}}}	
 
