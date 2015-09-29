@@ -194,7 +194,6 @@ class UWCourseDB:
 
 		self.sql.commit()
 		#}}}
-
 	
 	def is_opening(self, subject, catalog, section): #{{{
 		self.db.execute('SELECT is_tba, is_cancelled, is_closed FROM ' + \
@@ -206,7 +205,6 @@ class UWCourseDB:
 				return False
 		return True
 		#}}}
-
 
 	def get_opening_sections(self, subject, catalog): #{{{
 		self.db.execute('SELECT section FROM ' + subject + catalog + \
@@ -236,12 +234,54 @@ class UWCourseDB:
 		result = filter(None, result)
 		return result
 		#}}}
-	
-	def get_related_sections(self, subject, catalog, section): #{{{
-		#}}}
-	
-	def get_time_schedule(self, subject, catalog, section): #{{{
-		"""get time schedule of a class
+
+	def get_related_sections(self, subject, catalog, section): #{{{	
+		open_sections_list = self.get_opening_sections(subject, catalog)
+		self.db.execute('SELECT related_component_1, related_component_2' + \
+				', associated_class' + ' FROM ' + subject + catalog + \
+				" WHERE section = '" + section + "';")
+		search_result = self.db.fetchall()
+		if (search_result == []): return search_result
+		search_result = search_result[0]
+		associated_num = str(search_result[2])
+		self.db.execute('SELECT section FROM ' + subject + catalog + \
+				' WHERE associated_class = ' + associated_num + ';')
+		associated_list = self.db.fetchall()
+		self.db.execute('SELECT section FROM ' + subject + catalog + \
+				" WHERE associated_class = '99' OR associated_class = 'None';")
+		free_list = self.db.fetchall()
+		result = [ [section] ]
+		for i in range(0, 2):
+			component = str(search_result[i])
+			temp_result = []
+			if (component != 'None' and component != '99'):
+				self.db.execute('SELECT section FROM ' + subject + catalog + \
+						' WHERE section LIKE ' + "'%" + component + "%';")
+				value = str((self.db.fetchall())[0][0])
+				temp_result.append(value)
+			else:
+				is_free = True
+				for row in associated_list:
+					name = row[0][:3]
+					index = int(row[0][4])
+					if (name == 'LEC'): continue
+					else:
+						is_free = False
+						if (index == (i + 1) and \
+							row[0] in open_sections_list[index]):
+							temp_result.append(str(row[0]))
+				if (is_free):
+					for row in free_list:
+						index = int(row[0][4])
+						if (index == (i + 1) and row[0] in \
+								open_sections_list[index]):
+							temp_result.append(str(row[0]))
+			result.append(temp_result)
+		return result
+	#}}}	
+
+"""def get_time_schedule(self, subject, catalog, section): #{{{
+		get time schedule of a class
 		The result contains two components:
 		[list_of_weekly_classes, list_of_one_time_classes], where
 		Each weekly_class in list_of_weekly_classes is formatted as
@@ -251,5 +291,5 @@ class UWCourseDB:
 		"""
 		#}}}
 
-	def get_instructors(self, subject, catalog, section): #{{{
-		#}}}
+"""	def get_instructors(self, subject, catalog, section): #{{{
+		#}}}"""
