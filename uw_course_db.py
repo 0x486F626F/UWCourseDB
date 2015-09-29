@@ -235,8 +235,11 @@ class UWCourseDB:
 		return result
 		#}}}
 
-	def get_related_sections(self, subject, catalog, section): #{{{	
+	def get_related_sections(self, subject, catalog, section): #{{{
+		# get opening sections list
 		open_sections_list = self.get_opening_sections(subject, catalog)
+		
+		# get section info
 		self.db.execute('SELECT related_component_1, related_component_2' + \
 				', associated_class' + ' FROM ' + subject + catalog + \
 				" WHERE section = '" + section + "';")
@@ -244,6 +247,8 @@ class UWCourseDB:
 		if (search_result == []): return search_result
 		search_result = search_result[0]
 		associated_num = str(search_result[2])
+		
+		# get free list and associated list
 		self.db.execute('SELECT section FROM ' + subject + catalog + \
 				' WHERE associated_class = ' + associated_num + ';')
 		associated_list = self.db.fetchall()
@@ -251,6 +256,8 @@ class UWCourseDB:
 				" WHERE associated_class = '99' OR associated_class = 'None';")
 		free_list = self.db.fetchall()
 		result = [ [section] ]
+		
+		# determine valid combinations
 		for i in range(0, 2):
 			component = str(search_result[i])
 			temp_result = []
