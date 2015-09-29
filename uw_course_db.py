@@ -135,9 +135,9 @@ class UWCourseDB:
 		section_header_value_pairs = [
 				['class_number',		str(section['class_number'])],
 				['section',				str(section['section'])],
-				['associated_class',	str(section['associated_class'])],
-				['related_component_1', str(section['related_component_1'])],
-				['related_component_2', str(section['related_component_2'])],
+				['associated_class',	associated_class],
+				['related_component_1', related_component_1],
+				['related_component_2', related_component_2],
 				['campus',				str(section['campus'])],
 				['enrollment_total',	section['enrollment_total']],
 				['enrollment_capacity',	section['enrollment_capacity']],
@@ -227,10 +227,10 @@ class UWCourseDB:
 			no_space_section = section.replace(' ','')
 			if (self.is_opening(subject, catalog, no_space_section)):
 				number = section[3:]
-				index = int(number[:2])
+				idx = int(number[:2])
 				if (section != last_section_label):
 					last_section_label = section
-					result[index].append(section)
+					result[idx].append(section)
 		result = filter(None, result)
 		return result
 		#}}}
@@ -266,25 +266,24 @@ class UWCourseDB:
 						' WHERE section LIKE ' + "'%" + component + "%';")
 				value = str((self.db.fetchall())[0][0])
 				temp_result.append(value)
-			else:
-				is_free = True
-				for row in associated_list:
-					name = row[0][:3]
-					index = int(row[0][4])
-					if (name == 'LEC'): continue
-					else:
-						is_free = False
-						if (index == (i + 1) and \
-							row[0] in open_sections_list[index]):
-							temp_result.append(str(row[0]))
-				if (is_free):
-					for row in free_list:
-						index = int(row[0][4])
-						if (index == (i + 1) and row[0] in \
-								open_sections_list[index]):
-							temp_result.append(str(row[0]))
-			result.append(temp_result)
-		result = filter(None, result)
+				result.append(temp_result)
+				continue
+
+			is_free = True
+			for row in associated_list:
+				name = row[0][:3]
+				idx = int(row[0][-3])
+				if (name != section[:3]): 
+					is_free = False
+					if (idx == i + 1 and row[0] in open_sections_list[idx]):
+						temp_result.append(str(row[0]))
+			if not is_free: continue
+
+			for row in free_list:
+				idx = int(row[0][-3])
+				if (idx == i + 1 and row[0] in open_sections_list[idx]):
+					temp_result.append(str(row[0]))
+			if (temp_result != []): result.append(temp_result)
 		return result
 	#}}}	
 
