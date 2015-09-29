@@ -288,8 +288,8 @@ class UWCourseDB:
 		return result
 	#}}}	
 
-"""def get_time_schedule(self, subject, catalog, section): #{{{
-		get time schedule of a class
+	def get_time_schedule(self, subject, catalog, section): #{{{
+		"""get time schedule of a class
 		The result contains two components:
 		[list_of_weekly_classes, list_of_one_time_classes], where
 		Each weekly_class in list_of_weekly_classes is formatted as
@@ -297,7 +297,9 @@ class UWCourseDB:
 		Each one_time_class in list_of_one_time_classes is formatted as
 		[date, start_time, end_time]
 		"""
+		return None
 		#}}}
 
-"""	def get_instructors(self, subject, catalog, section): #{{{
-		#}}}"""
+	def get_instructors(self, subject, catalog, section): #{{{
+		return None
+		#}}}
