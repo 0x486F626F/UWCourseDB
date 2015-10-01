@@ -289,7 +289,7 @@ class UWCourseDB:
 				else:
 					self.db.execute('SELECT section FROM ' + subject + \
 					catalog + " WHERE section LIKE '%" + name + \
-					"%';")
+					"%' AND accociated_class = 'None';")
 					temp_result = self.db.fetchall()
 					for row in temp_result:
 						if (str(row[0]) in open_sections_list[i]):
