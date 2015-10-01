@@ -236,10 +236,14 @@ class UWCourseDB:
 		#}}}
 
 	def get_related_sections(self, subject, catalog, section): #{{{
-		# get opening sections list
-		open_sections_list = self.get_opening_sections(subject, catalog)
 		
+		# get opening sections list
+		
+		open_sections_list = self.get_opening_sections(subject, catalog)
+		catag_num = len(open_sections_list)
+
 		# get section info
+
 		self.db.execute('SELECT related_component_1, related_component_2' + \
 				', associated_class' + ' FROM ' + subject + catalog + \
 				" WHERE section = '" + section + "';")
@@ -248,43 +252,51 @@ class UWCourseDB:
 		search_result = search_result[0]
 		associated_num = str(search_result[2])
 		
-		# get free list and associated list
-		self.db.execute('SELECT section FROM ' + subject + catalog + \
-				' WHERE associated_class = ' + associated_num + ';')
-		associated_list = self.db.fetchall()
-		self.db.execute('SELECT section FROM ' + subject + catalog + \
-				" WHERE associated_class = '99' OR associated_class = 'None';")
-		free_list = self.db.fetchall()
-		result = [ [section] ]
+		result = [[] for i in range(catag_num)]
+		result[0].append(section)
+		is_free = [1, 1]
 		
-		# determine valid combinations
-		for i in range(0, 2):
-			component = str(search_result[i])
-			temp_result = []
-			if (component != 'None' and component != '99'):
+		# get manditory sections
+		
+		for i in range (0, 2):
+			if (search_result[i] != 'None'):
 				self.db.execute('SELECT section FROM ' + subject + catalog + \
-						' WHERE section LIKE ' + "'%" + component + "%';")
-				value = str((self.db.fetchall())[0][0])
-				temp_result.append(value)
-				result.append(temp_result)
-				continue
-
-			is_free = True
-			for row in associated_list:
-				name = row[0][:3]
-				idx = int(row[0][-3])
-				if (name != section[:3]): 
-					is_free = False
-					if (idx == i + 1 and row[0] in open_sections_list[idx]):
-						temp_result.append(str(row[0]))
-			if not is_free: continue
-
-			for row in free_list:
-				idx = int(row[0][-3])
-				if (idx == i + 1 and row[0] in open_sections_list[idx]):
-					temp_result.append(str(row[0]))
-			if (temp_result != []): result.append(temp_result)
+						" WHERE section LIKE '%" + search_result[i] + "%';")
+				value = str(self.db.fetchall()[0][0])
+				is_free[i] = 0
+				idx = -1
+				for j in range(1, catag_num):
+					if (value in open_sections_list[j]): idx = j
+				if (idx > 0):
+					result[idx].append(value)
+		for i in range(1, catag_num):
+			if (result[i] == [] and is_free[i - 1] == 1):
+				name = open_sections_list[i][0][:3]
+				
+				# get associated sections
+				
+				self.db.execute('SELECT section FROM ' + subject + catalog + \
+						" WHERE section LIKE '%" + name + \
+						"%' AND associated_class = '" + associated_num + "';")
+				temp_result = self.db.fetchall()
+				if (temp_result != []):
+					for row in temp_result:
+						if (str(row[0]) in open_sections_list[i]):
+							result[i].append(str(row[0]))
+				
+				# get free sections
+				
+				else:
+					self.db.execute('SELECT section FROM ' + subject + \
+					catalog + " WHERE section LIKE '%" + name + \
+					"%';")
+					temp_result = self.db.fetchall()
+					for row in temp_result:
+						if (str(row[0]) in open_sections_list[i]):
+							result[i].append(str(row[0]))
+		result = filter(None, result) 
 		return result
+				
 	#}}}	
 
 	def get_time_schedule(self, subject, catalog, section): #{{{
