@@ -235,6 +235,40 @@ class UWCourseDB:
 		return result
 		#}}}
 
+	def new_get_related_sections(self, subject, catalog, section):
+		open_sections = self.get_opening_sections(subject, catalog)
+
+		component_labels = []
+		related_sections = []
+		for component in open_sections:
+			component_labels.append(component[0][:4])
+			related_sections.append([])
+		related_sections[int(section[-3])].append(section)
+
+		self.db.execute("SELECT related_component_1, related_component_2 FROM " + subject + catalog + " WHERE section = '" + section + "';")
+		result = self.db.fetchone()
+		if result == []: return result
+		for related in result:
+			if (str(related) == 'None'): continue
+			idx = int(related[0])
+			related_sections[idx].append(component_labels[idx] + str(related))
+
+		self.db.execute("SELECT associated_class FROM " + subject + catalog + " WHERE section = '" + section + "';")
+		associated = str(self.db.fetchone()[0])
+
+		for i in range(len(component_labels)):
+			if related_sections[i] != []: continue
+			self.db.execute("SELECT section FROM " + subject + catalog + " WHERE section LIKE '" + component_labels[i] + "%' AND associated_class = '" + associated + "';")
+			result = self.db.fetchall()
+			if result == []:
+				self.db.execute("SELECT section FROM " + subject + catalog + " WHERE section LIKE '" + component_labels[i] + "%' AND associated_class = 'None';")
+				result = self.db.fetchall()
+			for section in result:
+				related_sections[i].append(str(section[0]))
+
+		return related_sections
+
+	
 	def get_related_sections(self, subject, catalog, section): #{{{
 		
 		# get opening sections list
@@ -289,7 +323,7 @@ class UWCourseDB:
 				else:
 					self.db.execute('SELECT section FROM ' + subject + \
 					catalog + " WHERE section LIKE '%" + name + \
-					"%' AND accociated_class = 'None';")
+					"%' AND associated_class = 'None';")
 					temp_result = self.db.fetchall()
 					for row in temp_result:
 						if (str(row[0]) in open_sections_list[i]):
