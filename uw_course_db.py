@@ -327,8 +327,7 @@ class UWCourseDB:
 		"""
 		no_space_section = section.replace(' ','')
 		self.db.execute('SELECT start_date, end_date, start_time, end_time,' +\
-		' weekdays FROM ' + subject + catalog + \
-		no_space_section + '_schedule;')
+		' weekdays FROM ' + subject + catalog + no_space_section + '_schedule;')
 		search_result = self.db.fetchall()
 		result = [[], []]
 		for row in search_result:
@@ -352,5 +351,7 @@ class UWCourseDB:
 		#}}}
 
 	def get_instructors(self, subject, catalog, section): #{{{
-		return None
+		self.db.execute('SELECT instructors FROM ' + subject + catalog + \
+				section.replace(" ", "") + '_schedule;')
+		return str(self.db.fetchone()[0])
 		#}}}
