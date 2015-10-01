@@ -299,6 +299,23 @@ class UWCourseDB:
 				
 	#}}}	
 
+	def convert_weekday(self,weekdays): #{{{
+		result = []
+		i = 0
+		while (i < len(weekdays)):
+			day = weekdays[i]
+			if (day == 'M'): result.append(1)
+			elif (day == 'T' and i == len(weekdays) - 1): result.append(2)
+			elif (day == 'T' and weekdays[i + 1] == 'h'):
+				i += 1
+				result.append(4)
+			elif (day == 'T'): result.append(2)
+			elif (day == 'W'): result.append(3)
+			elif (day == 'F'): result.append(5)
+			i += 1
+		return result
+		#}}}
+
 	def get_time_schedule(self, subject, catalog, section): #{{{
 		"""get time schedule of a class
 		The result contains two components:
@@ -308,7 +325,30 @@ class UWCourseDB:
 		Each one_time_class in list_of_one_time_classes is formatted as
 		[date, start_time, end_time]
 		"""
-		return None
+		no_space_section = section.replace(' ','')
+		self.db.execute('SELECT start_date, end_date, start_time, end_time,' +\
+		' weekdays FROM ' + subject + catalog + \
+		no_space_section + '_schedule;')
+		search_result = self.db.fetchall()
+		result = [[], []]
+		for row in search_result:
+			temp_result = []
+			start_date = str(row[0])
+			end_date = str(row[1])
+			start_time = str(row[2])
+			end_time = str(row[3])
+			weekdays = str(row[4])
+			if (start_date == 'None'):
+				temp_result.append(self.convert_weekday(weekdays))
+				temp_result.append(start_time)
+				temp_result.append(end_time)
+				result[0].append(temp_result)
+			else:
+				temp_result.append(start_date)
+				temp_result.append(start_time)
+				temp_result.append(end_time)
+				result[1].append(temp_result)
+		return result
 		#}}}
 
 	def get_instructors(self, subject, catalog, section): #{{{
