@@ -235,63 +235,65 @@ class UWCourseDB:
 		return result
 		#}}}
 
-	def new_get_related_sections(self, subject, catalog, section):
+	def new_get_related_sections(self, subject, catalog, section):#{{{
 		open_sections = self.get_opening_sections(subject, catalog)
-
 		component_labels = []
 		related_sections = []
 		for component in open_sections:
 			component_labels.append(component[0][:4])
 			related_sections.append([])
 		related_sections[int(section[-3])].append(section)
-
-		self.db.execute("SELECT related_component_1, related_component_2 FROM " + subject + catalog + " WHERE section = '" + section + "';")
+		self.db.execute("SELECT related_component_1," +  
+				"related_component_2 FROM " + \
+				 subject + catalog + " WHERE section = '" + section + "';")
 		result = self.db.fetchone()
+		is_free = [1, 1]
 		if result == []: return result
 		for related in result:
 			if (str(related) == 'None'): continue
 			idx = int(related[0])
-			related_sections[idx].append(component_labels[idx] + str(related))
-
-		self.db.execute("SELECT associated_class FROM " + subject + catalog + " WHERE section = '" + section + "';")
+			is_free[idx - 1] = 0
+			name = component_labels[idx] + str(related) 
+			if (name in open_sections[idx]):
+				related_sections[idx].append(name)
+		self.db.execute("SELECT associated_class FROM " + subject + catalog + \
+				" WHERE section = '" + section + "';")
 		associated = str(self.db.fetchone()[0])
-
 		for i in range(len(component_labels)):
-			if related_sections[i] != []: continue
-			self.db.execute("SELECT section FROM " + subject + catalog + " WHERE section LIKE '" + component_labels[i] + "%' AND associated_class = '" + associated + "';")
+			if (related_sections[i] != [] or (i != 0 and not is_free[i - 1])): 
+				continue
+			self.db.execute("SELECT section FROM " + subject + catalog + \
+					" WHERE section LIKE '" + component_labels[i] + \
+					"%' AND associated_class = '" + associated + "';")
 			result = self.db.fetchall()
 			if result == []:
-				self.db.execute("SELECT section FROM " + subject + catalog + " WHERE section LIKE '" + component_labels[i] + "%' AND associated_class = 'None';")
+				self.db.execute("SELECT section FROM " + subject + catalog + \
+						" WHERE section LIKE '" + component_labels[i] + \
+						"%' AND associated_class = 'None';")
 				result = self.db.fetchall()
 			for section in result:
-				related_sections[i].append(str(section[0]))
-
+				name = str(section[0]).replace(' ','')
+				if (self.is_opening(subject, catalog, name)):
+					related_sections[i].append(str(section[0]))
+		related_sections = filter(None, related_sections)		
 		return related_sections
-
+		#}}}
 	
-	def get_related_sections(self, subject, catalog, section): #{{{
-		
-		# get opening sections list
-		
+	def get_related_sections(self, subject, catalog, section): #{{{	
+		# get open sections
 		open_sections_list = self.get_opening_sections(subject, catalog)
 		catag_num = len(open_sections_list)
-
-		# get section info
-
 		self.db.execute('SELECT related_component_1, related_component_2' + \
 				', associated_class' + ' FROM ' + subject + catalog + \
 				" WHERE section = '" + section + "';")
 		search_result = self.db.fetchall()
 		if (search_result == []): return search_result
 		search_result = search_result[0]
-		associated_num = str(search_result[2])
-		
+		associated_num = str(search_result[2])	
 		result = [[] for i in range(catag_num)]
 		result[0].append(section)
 		is_free = [1, 1]
-		
-		# get manditory sections
-		
+		# get manditory sections(related_component)
 		for i in range (0, 2):
 			if (search_result[i] != 'None'):
 				self.db.execute('SELECT section FROM ' + subject + catalog + \
@@ -306,9 +308,7 @@ class UWCourseDB:
 		for i in range(1, catag_num):
 			if (result[i] == [] and is_free[i - 1] == 1):
 				name = open_sections_list[i][0][:3]
-				
 				# get associated sections
-				
 				self.db.execute('SELECT section FROM ' + subject + catalog + \
 						" WHERE section LIKE '%" + name + \
 						"%' AND associated_class = '" + associated_num + "';")
@@ -316,10 +316,8 @@ class UWCourseDB:
 				if (temp_result != []):
 					for row in temp_result:
 						if (str(row[0]) in open_sections_list[i]):
-							result[i].append(str(row[0]))
-				
+							result[i].append(str(row[0]))				
 				# get free sections
-				
 				else:
 					self.db.execute('SELECT section FROM ' + subject + \
 					catalog + " WHERE section LIKE '%" + name + \
@@ -329,8 +327,7 @@ class UWCourseDB:
 						if (str(row[0]) in open_sections_list[i]):
 							result[i].append(str(row[0]))
 		result = filter(None, result) 
-		return result
-				
+		return result				
 	#}}}	
 
 	def convert_weekday(self,weekdays): #{{{
@@ -365,22 +362,22 @@ class UWCourseDB:
 		search_result = self.db.fetchall()
 		result = [[], []]
 		for row in search_result:
-			temp_result = []
+			section_info = []
 			start_date = str(row[0])
 			end_date = str(row[1])
 			start_time = str(row[2])
 			end_time = str(row[3])
 			weekdays = str(row[4])
 			if (start_date == 'None'):
-				temp_result.append(self.convert_weekday(weekdays))
-				temp_result.append(start_time)
-				temp_result.append(end_time)
-				result[0].append(temp_result)
+				section_info.append(self.convert_weekday(weekdays))
+				section_info.append(start_time)
+				section_info.append(end_time)
+				result[0].append(section_info)
 			else:
-				temp_result.append(start_date)
-				temp_result.append(start_time)
-				temp_result.append(end_time)
-				result[1].append(temp_result)
+				section_info.append(start_date)
+				section_info.append(start_time)
+				section_info.append(end_time)
+				result[1].append(section_info)
 		return result
 		#}}}
 
