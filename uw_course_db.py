@@ -1,5 +1,6 @@
 import sqlite3
 import datetime
+import os
 
 class UWCourseDB:
 	def __init__(self, term, uwapi, timedelta = 3600, path = 'db/'): #{{{
@@ -8,6 +9,8 @@ class UWCourseDB:
 		self.term = term
 		self.uwapi = uwapi
 		self.path = path
+		if not os.path.exists(path):
+			os.makedirs(path)
 		self.sql = sqlite3.connect(path + str(term) + '.db')
 		self.db = self.sql.cursor()
 		self.min_timedelta = datetime.timedelta(seconds = timedelta)
