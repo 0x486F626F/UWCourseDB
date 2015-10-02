@@ -374,10 +374,14 @@ class UWCourseDB:
 				section_info.append(end_time)
 				result[0].append(section_info)
 			else:
+				year = (self.term % 1000) / 10 + 2000
+				start_date = datetime.date(year, int(start_date[:2]), \
+						int(start_date[-2:]))
 				section_info.append(start_date)
 				section_info.append(start_time)
 				section_info.append(end_time)
 				result[1].append(section_info)
+		result = filter(None, result)
 		return result
 		#}}}
 
