@@ -202,6 +202,7 @@ class UWCourseDB:
 		self.db.execute('SELECT is_tba, is_cancelled, is_closed FROM ' + \
 				subject + catalog + section + '_schedule;')
 		search_result = self.db.fetchall()
+		# check if the section is tba or closed 
 		for row in search_result:
 			if (str(row[0]) == 'True' or str(row[1]) == 'True' or \
 				str(row[2]) == 'True'):
@@ -336,6 +337,7 @@ class UWCourseDB:
 	def convert_weekday(self,weekdays): #{{{
 		result = []
 		i = 0
+		# convert weekdays 'M', 'T' etc. into integers
 		while (i < len(weekdays)):
 			day = weekdays[i]
 			if (day == 'M'): result.append(1)
@@ -371,11 +373,13 @@ class UWCourseDB:
 			start_time = str(row[2])
 			end_time = str(row[3])
 			weekdays = str(row[4])
+			# get weekly sections
 			if (start_date == 'None'):
 				section_info.append(self.convert_weekday(weekdays))
 				section_info.append(start_time)
 				section_info.append(end_time)
 				result[0].append(section_info)
+			# get one-time sections
 			else:
 				year = (self.term % 1000) / 10 + 2000
 				start_date = datetime.date(year, int(start_date[:2]), \
