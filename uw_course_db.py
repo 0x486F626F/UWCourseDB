@@ -388,7 +388,6 @@ class UWCourseDB:
 				section_info.append(start_time)
 				section_info.append(end_time)
 				result[1].append(section_info)
-		result = filter(None, result)
 		return result
 		#}}}
 
