@@ -74,7 +74,7 @@ class UWCourseDB:
 			last_sync = datetime.datetime.strptime(
                 str(result[0]), "%Y-%m-%d %H:%M:%S.%f")
 			if (datetime.datetime.today() - last_sync < self.min_timedelta):
-				print "No need to update " + subject + catalog
+				# print "No need to update " + subject + catalog
 				return
 
 		course = self.uwapi.term_course_schedule(self.term, subject, catalog)
