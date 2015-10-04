@@ -152,6 +152,7 @@ class UWCourseDB:
 		self.insert_data(course_table, section_header_value_pairs)
 
 		for reserve in section['reserves']:
+			if len(reverve) < 3: continue
 			reserve_header_value_pairs = section_header_value_pairs[:]
 			reserve_header_value_pairs.append(
                 ['reserve_group',		str(reserve['reserve_group'])])
