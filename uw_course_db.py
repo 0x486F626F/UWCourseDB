@@ -211,6 +211,7 @@ class UWCourseDB:
 		#}}}
 
 	def get_opening_sections(self, subject, catalog): #{{{
+		self.update_course(subject, catalog)
 		self.db.execute('SELECT section FROM ' + subject + catalog + \
 				' ORDER BY section;')
 		search_result = self.db.fetchall()
@@ -285,6 +286,7 @@ class UWCourseDB:
 	
 	def get_related_sections(self, subject, catalog, section): #{{{	
 		# get open sections
+		self.update_course(subject, catalog)
 		open_sections_list = self.get_opening_sections(subject, catalog)
 		catag_num = len(open_sections_list)
 		self.db.execute('SELECT related_component_1, related_component_2' + \
@@ -361,6 +363,7 @@ class UWCourseDB:
 		Each one_time_class in list_of_one_time_classes is formatted as
 		[date, start_time, end_time]
 		"""
+		self.update_course(subject, catalog)
 		no_space_section = section.replace(' ','')
 		self.db.execute('SELECT start_date, end_date, start_time, end_time,' +\
 		' weekdays FROM ' + subject + catalog + no_space_section + '_schedule;')
@@ -392,6 +395,7 @@ class UWCourseDB:
 		#}}}
 
 	def get_instructors(self, subject, catalog, section): #{{{
+		self.update_course(subject, catalog)
 		self.db.execute('SELECT instructors FROM ' + subject + catalog + \
 				section.replace(" ", "") + '_schedule;')
 		return str(self.db.fetchone()[0])
