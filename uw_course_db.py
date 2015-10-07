@@ -375,7 +375,9 @@ class UWCourseDB:
 			start_date = str(row[0])
 			end_date = str(row[1])
 			start_time = str(row[2])
+			start_time = datetime.datetime.strptime(start_time,'%H:%M').time()
 			end_time = str(row[3])
+			end_time = datetime.datetime.strptime(end_time,'%H:%M').time()
 			weekdays = str(row[4])
 			# get weekly sections
 			if (start_date == 'None'):
