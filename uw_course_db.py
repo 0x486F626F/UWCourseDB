@@ -2,9 +2,17 @@ import sqlite3
 import datetime
 import os
 
-class UWCourseDB:
+class UWCourseDB
+
+	
 	def __init__(self, term, uwapi, timedelta = 3600, path = 'db/'): #{{{
-		"""Constructor
+		"""The constructor of the UWCourseDB
+
+		Args:
+			term (int): The term where courses are selected
+			uwapi (uwaterlooapi): The uwaterloo api created by UWaterlooAPI
+			timedelta (int): The minimum time gap to update a course in database
+			path (string): The path where database located
 		"""
 		self.term = term
 		self.uwapi = uwapi
@@ -27,6 +35,13 @@ class UWCourseDB:
 		#}}}
 
 	def create_table_if_not_exists(self, table_name, headers): #{{{
+		"""Create a table with specified headers in the database
+
+		Args:
+			table_name (string): The name of the table
+			headers (string): The headers specified to be in the table
+		"""
+
 		command = 'CREATE TABLE IF NOT EXISTS ' + table_name + '('
 		for header in headers:
 			command += header + ', '
@@ -36,6 +51,8 @@ class UWCourseDB:
 		#}}}
 
 	def insert_data(self, table_name, header_value_pairs): #{{{
+		"""Insert the data into th
+		"""
 		command = 'INSERT INTO ' + table_name + '('
 		for pair in header_value_pairs:
 			command += pair[0] + ', '
@@ -200,6 +217,18 @@ class UWCourseDB:
 		#}}}
 	
 	def is_opening(self, subject, catalog, section): #{{{
+		"""Check whether a specified section is opening or not
+
+		Args:
+			subject (string): The suject of the course(e.g. 'CS')
+			catalog (string): The catalog number of the course(e.g. '115')
+			section (string): The section of the course(e.g. 'LEC 001')
+		
+		Return:
+			bool: Ture if the course is open(not tba, closed or online)
+				  False otherwise
+
+		"""
 		self.db.execute('SELECT is_tba, is_cancelled, is_closed FROM ' + \
 				subject + catalog + section + '_schedule;')
 		search_result = self.db.fetchall()
@@ -212,6 +241,20 @@ class UWCourseDB:
 		#}}}
 
 	def get_opening_sections(self, subject, catalog): #{{{
+		"""Get all the opening sections of the specified course
+
+		Args:
+			subject (string): The subject of the course(e.g. 'CS')
+			catalog (string): The catalog number of the course(e.g. '135')
+
+		Returns:
+			list: The result consists of several sublists(usually 2 or 3)
+				  The sublists are all the open sections of different 
+				  components of this course
+				  e.g.
+				  [['LEC 001', 'LEC 002'], ['TUT 101'], ['TST 201', 'TST 202']]
+
+		"""
 		self.update_course(subject, catalog)
 		self.db.execute('SELECT section FROM ' + subject + catalog + \
 				' ORDER BY section;')
@@ -242,6 +285,22 @@ class UWCourseDB:
 		#}}}
 
 	def new_get_related_sections(self, subject, catalog, section):#{{{
+		"""Get all the possible combinations
+
+		The combinations satisfies all the basic associations
+
+		Args:
+			subject (string): The subject of the course (e.g. 'CS')
+			catalog (string): The catalog number of the course (e.g. '115')
+			section (string): The section of the course (e.g. 'LEC 001')
+		Returns:
+			list: The list contains several sublists(usually 2 or 3)
+				  The first sublist is the section specified 
+				  The rest sublists are the valid associated sections of the 
+				  section specified
+				  e.g.
+				  [['LEC 001'], ['TUT 101', 'TUT 102'], ['TST 201']]
+		"""
 		open_sections = self.get_opening_sections(subject, catalog)
 		component_labels = []
 		related_sections = []
