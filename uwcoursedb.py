@@ -2,7 +2,7 @@ import sqlite3
 import datetime
 import os
 
-class UWCourseDB
+class UWCourseDB:
 
 	
 	def __init__(self, term, uwapi, timedelta = 3600, path = 'db/'): #{{{
