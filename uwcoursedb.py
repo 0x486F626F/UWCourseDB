@@ -9,10 +9,12 @@ class UWCourseDB:
 		"""The constructor of the UWCourseDB
 
 		Args:
-			term (int): The term where courses are selected
+			term (int): A 4-digit int representing a term (e.g. 1159)
 			uwapi (uwaterlooapi): The uwaterloo api created by UWaterlooAPI
-			timedelta (int): The minimum time gap to update a course in database
-			path (string): The path where database located
+					module, get one API key at https://api.uwaterloo.ca/
+			timedelta (int): The minimum time gap between database updates
+			path (string): The directory you want your local database to be
+					located at
 		"""
 		self.term = term
 		self.uwapi = uwapi
@@ -51,7 +53,7 @@ class UWCourseDB:
 		#}}}
 
 	def insert_data(self, table_name, header_value_pairs): #{{{
-		"""Insert the data into th
+		"""Insert the data into the table
 		"""
 		command = 'INSERT INTO ' + table_name + '('
 		for pair in header_value_pairs:
@@ -83,6 +85,10 @@ class UWCourseDB:
 		#}}}
 
 	def update_course(self, subject, catalog): #{{{
+		'''Updates the course specified if it is the first update ever, or it 
+		has been more than min_timedelta since last update.
+
+		'''
 		self.db.execute("SELECT last_sync FROM course WHERE subject = '" + \
                         subject + "' AND catalog_number = '" + catalog + "';")
 		result = self.db.fetchone()
@@ -133,12 +139,11 @@ class UWCourseDB:
 				self.update_section(section)
 			self.sql.commit()
 		else:
-			print subject + " " + catalog + " is not offerrd this term"
+			print subject + " " + catalog + " is not offerrd for " + str(self.term)
 		#}}}
 
 	def update_section(self, section): #{{{
 		course_table = section['subject'] + section['catalog_number']
-
 
 		held_with = ''
 		for course in section['held_with']:
@@ -397,13 +402,15 @@ class UWCourseDB:
 	#}}}	
 
 	def convert_weekday(self,weekdays): #{{{
+		'''convert weekdays 'M', 'T', etc. into corresponding integers
+		1, 2, etc.
+		'''
 		result = []
 		i = 0
-		# convert weekdays 'M', 'T' etc. into integers
 		while (i < len(weekdays)):
 			day = weekdays[i]
 			if (day == 'M'): result.append(1)
-			elif (day == 'T' and i == len(weekdays) - 1): result.append(2)
+			elif (day == 'T' and i == len(weekdays) - 1): result.append(2)   # Do we need this?
 			elif (day == 'T' and weekdays[i + 1] == 'h'):
 				i += 1
 				result.append(4)
