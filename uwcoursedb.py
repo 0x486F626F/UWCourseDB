@@ -469,3 +469,15 @@ class UWCourseDB:
 				section.replace(" ", "") + '_schedule;')
 		return str(self.db.fetchone()[0])
 		#}}}
+
+	def get_reserve_info(self, subject, catalog, section): #{{{
+		'''get reserve information about the class specified, in the
+		form of [reserve_group, reserve_total, reserve_capacity].
+			e.g. ["Year 1 Math Students", "20", "25"]
+		'''
+		self.update_course(subject, catalog)
+		self.db.execute('SELECT reserve_group, reserve_total, reserve_capacity' + \
+				' FROM ' + subject + catalog + " WHERE section = '" + section + "';")
+		result = self.db.fetchall()
+		return result[-1]        # it's just magic...
+		#}}}
