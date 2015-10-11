@@ -174,14 +174,22 @@ class UWCourseDB:
 		self.insert_data(course_table, section_header_value_pairs)
 
 		for reserve in section['reserves']:
-			if len(reserve) < 3: continue
 			reserve_header_value_pairs = section_header_value_pairs[:]
+			reserve_group = "None"
+			reserve_capacity = 0
+			reserve_total = 0
+			if 'reserve_group' in reserve: 
+				reserve_group = str(reserve['reserve_group'])
+			if 'enrollment_capacity' in reserve: 
+				reserve_capacity = str(reserve['enrollment_capacity'])
+			if 'enrollment_total' in reserve: 
+				reserve_total = str(reserve['enrollment_total'])
 			reserve_header_value_pairs.append(
-                ['reserve_group',		str(reserve['reserve_group'])])
+                ['reserve_group',		reserve_group])
 			reserve_header_value_pairs.append(
-                ['reserve_total',		str(reserve['enrollment_total'])])
+                ['reserve_total',		reserve_total])
 			reserve_header_value_pairs.append(
-                ['reserve_capacity',	str(reserve['enrollment_capacity'])])
+                ['reserve_capacity',	reserve_capacity])
 			self.insert_data(course_table, reserve_header_value_pairs)
 
 		time_schedule = course_table + section['section'].replace(" ", "") + \
@@ -468,16 +476,4 @@ class UWCourseDB:
 		self.db.execute('SELECT instructors FROM ' + subject + catalog + \
 				section.replace(" ", "") + '_schedule;')
 		return str(self.db.fetchone()[0])
-		#}}}
-
-	def get_reserve_info(self, subject, catalog, section): #{{{
-		'''get reserve information about the class specified, in the
-		form of [reserve_group, reserve_total, reserve_capacity].
-			e.g. ["Year 1 Math Students", "20", "25"]
-		'''
-		self.update_course(subject, catalog)
-		self.db.execute('SELECT reserve_group, reserve_total, reserve_capacity' + \
-				' FROM ' + subject + catalog + " WHERE section = '" + section + "';")
-		result = self.db.fetchall()
-		return result[-1]        # it's just magic...
 		#}}}
