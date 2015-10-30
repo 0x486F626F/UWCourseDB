@@ -481,3 +481,15 @@ class UWCourseDB:
 		result = self.db.fetchall()
 		return result[-1]        # it's just magic...
 		#}}}
+
+	def get_course_location(self, subject, catalog, section): #{{{
+		'''get location information about the class specified, in the 
+		form of [building, room]
+			e.g. ["PAS", "2086"]
+		'''
+		self.update_course(subject, catalog)
+		self.db.execute('SELECT building, room FROM ' + subject + catalog + \
+				section.replace(" ", "") + "_schedule;")
+		result = self.db.fetchall()
+		return result[-1]
+		#}}}
