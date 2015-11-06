@@ -174,14 +174,22 @@ class UWCourseDB:
 		self.insert_data(course_table, section_header_value_pairs)
 
 		for reserve in section['reserves']:
-			if len(reserve) < 3: continue
 			reserve_header_value_pairs = section_header_value_pairs[:]
+			reserve_group = "None"
+			reserve_capacity = 0
+			reserve_total = 0
+			if 'reserve_group' in reserve: 
+				reserve_group = str(reserve['reserve_group'])
+			if 'enrollment_capacity' in reserve: 
+				reserve_capacity = str(reserve['enrollment_capacity'])
+			if 'enrollment_total' in reserve: 
+				reserve_total = str(reserve['enrollment_total'])
 			reserve_header_value_pairs.append(
-                ['reserve_group',		str(reserve['reserve_group'])])
+                ['reserve_group',		reserve_group])
 			reserve_header_value_pairs.append(
-                ['reserve_total',		str(reserve['enrollment_total'])])
+                ['reserve_total',		reserve_total])
 			reserve_header_value_pairs.append(
-                ['reserve_capacity',	str(reserve['enrollment_capacity'])])
+                ['reserve_capacity',	reserve_capacity])
 			self.insert_data(course_table, reserve_header_value_pairs)
 
 		time_schedule = course_table + section['section'].replace(" ", "") + \
