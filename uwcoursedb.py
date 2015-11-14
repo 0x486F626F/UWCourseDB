@@ -1,6 +1,7 @@
 import sqlite3
 import datetime
 import os
+import uwaterlooapi
 
 class UWCourseDB:
 
@@ -252,6 +253,14 @@ class UWCourseDB:
 				return False
 		return True
 		#}}}
+
+
+	def course_opening(self, subject, catalog):
+		self.db.execute("SELECT name FROM sqlite_master" + \
+				" WHERE type = 'table' AND name = '" + subject + catalog + "';")
+		result = self.db.fetchall()
+		if (result == []): return False
+		else: return True
 
 	def get_opening_sections(self, subject, catalog): #{{{
 		"""Get all the opening sections of the specified course
