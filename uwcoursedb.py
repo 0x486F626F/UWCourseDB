@@ -256,6 +256,7 @@ class UWCourseDB:
 
 
 	def course_opening(self, subject, catalog):
+		self.update_course(subject, catalog)
 		self.db.execute("SELECT name FROM sqlite_master" + \
 				" WHERE type = 'table' AND name = '" + subject + catalog + "';")
 		result = self.db.fetchall()
