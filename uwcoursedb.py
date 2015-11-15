@@ -284,22 +284,28 @@ class UWCourseDB:
 		search_result = self.db.fetchall()
 
 		# count the number of components(LEC, TUT etc.)
-		result = [];
+		result = []
+		mapping = {}
 		last_section_label = ''
 		for row in search_result:
 			section = str(row[0])
 			if (section[:3] != last_section_label):
 				last_section_label = section[:3]
+				num = int(section[4:])
+				mapping[section[:3]] = num;
 				result.append([])
-
+		idx = 0
+		index = {}
+		for key in sorted(mapping):
+			index[key] = idx
+			idx += 1
 		# insert components names into the result list
 		last_section_label = ''
 		for row in search_result:
 			section = str(row[0])
 			no_space_section = section.replace(' ','')
 			if (self.is_opening(subject, catalog, no_space_section)):
-				number = section[3:]
-				idx = int(number[:2])
+				idx = index[section[:3]] 
 				if (section != last_section_label):
 					last_section_label = section
 					result[idx].append(section)
